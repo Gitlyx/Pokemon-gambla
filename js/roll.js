@@ -12,6 +12,7 @@ function roll() {
   var card = document.getElementById('rollCard');
   card.classList.add('flipped');
   SFX.flip();
+  haptic(15);
   spawnFlipSparkles(card);
 
   // Pick 2 distinct outcomes from weighted array

@@ -48,7 +48,12 @@
     </div>
 
     <!-- Gym countdown -->
-    <div class="gym-countdown" id="gymCountdown">3 rolls until Pewter City Gym!</div>
+    <div class="gym-countdown" id="gymCountdown">
+      <div class="gym-progress-wrap">
+        <div class="gym-countdown-text" id="gymCountdownText">3 rolls until Pewter City Gym!</div>
+        <div class="gym-progress-bar"><div class="gym-progress-fill" id="gymProgressFill" style="width:0%"></div></div>
+      </div>
+    </div>
 
     <!-- Roll card -->
     <div class="roll-card" id="rollCard" onclick="roll()">

@@ -52,7 +52,11 @@ function onRollComplete(idx) {
     chain.push(function(next) { showEvoAnimation(r.evoData, next); });
   }
 
+  // Hit-freeze: brief pause before reward display for impact
+  var hitFreeze = chain.length > 0 ? 60 : 0;
+
   runChain(chain, function() {
+    setTimeout(function() {
     showResult(r.title, r.desc, r.spriteId);
     addLog(r.title);
     updateUI();
@@ -68,6 +72,7 @@ function onRollComplete(idx) {
     } else if (game.phase !== 'victory') {
       setRollDisabled(false);
     }
+    }, hitFreeze);
   });
 }
 
@@ -86,12 +91,15 @@ function showCatchAnimation(caught, wildId, callback) {
     if (shakeIdx >= shakes) {
       if (caught) {
         SFX.catch();
+        haptic([15, 50, 15]);
+        screenShake();
         setTimeout(function() {
           overlay.classList.remove('active');
           callback();
         }, 400);
       } else {
         SFX.catchFail();
+        haptic(15);
         ball.classList.add('breaking');
         setTimeout(function() {
           overlay.classList.remove('active');

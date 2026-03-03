@@ -57,6 +57,8 @@ function showGymOverlay(gym, won) {
       defenderHp.style.width = '0%';
       defenderHp.classList.add('low');
     }
+    screenShake();
+    haptic([20, 40, 20]);
   }, 1100);
 
   setTimeout(function() {
@@ -67,6 +69,7 @@ function showGymOverlay(gym, won) {
       gr.className = 'gym-result win';
       gr.textContent = 'YOU WIN!';
       SFX.gymWin();
+      haptic([30, 80, 30, 80, 50]);
       document.getElementById('gd').textContent = gym.win;
       var b = document.getElementById('gbr');
       b.style.display = 'block';
@@ -77,6 +80,7 @@ function showGymOverlay(gym, won) {
       gr.className = 'gym-result lose';
       gr.textContent = 'DEFEATED...';
       SFX.gymLoss();
+      haptic([50, 100, 50]);
       document.getElementById('gd').textContent = "Your team wasn't strong enough! Keep training and come back!";
       gymDismissTimer = setTimeout(function() { dismissGym(won); }, 2000);
     }
@@ -174,11 +178,13 @@ function showE4Overlay(won) {
       gr.className = 'gym-result win';
       gr.textContent = 'YOU ARE THE CHAMPION!';
       SFX.gymWin();
+      haptic([30, 80, 30, 80, 50]);
       gc.onclick = showVictory;
     } else {
       gr.className = 'gym-result lose';
       gr.textContent = 'DEFEATED...';
       SFX.gymLoss();
+      haptic([50, 100, 50]);
       var gd = document.getElementById('gd');
       if (gd) gd.textContent += ' Keep training and try again!';
       gc.onclick = function() {

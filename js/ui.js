@@ -38,26 +38,35 @@ function updateHeader() {
 }
 
 function updateGymCountdown() {
-  var el = document.getElementById('gymCountdown');
+  var textEl = document.getElementById('gymCountdownText');
+  var fillEl = document.getElementById('gymProgressFill');
+  if (!textEl || !fillEl) return;
+
+  var rolls = Math.min(game.rollsOnRoute, 3);
+  var pct = (rolls / 3) * 100;
+
   if (game.phase === 'elite4') {
     if (game.rollsOnRoute >= 3) {
-      el.textContent = 'Elite Four challenge incoming...';
-      el.style.color = '#FFD700';
+      textEl.textContent = 'Elite Four challenge incoming...';
+      textEl.style.color = '#FFD700';
     } else {
       var left = 3 - game.rollsOnRoute;
-      el.textContent = left + ' roll' + (left !== 1 ? 's' : '') + ' until Elite Four!';
-      el.style.color = '#FFD700';
+      textEl.textContent = left + ' roll' + (left !== 1 ? 's' : '') + ' until Elite Four!';
+      textEl.style.color = '#FFD700';
     }
   } else if (game.rollsOnRoute < 3) {
     var left = 3 - game.rollsOnRoute;
     var gym = GYMS[game.currentGym];
-    el.textContent = left + ' roll' + (left !== 1 ? 's' : '') + ' until ' + gym.city + ' Gym!';
-    el.style.color = '#a0c4ff';
+    textEl.textContent = left + ' roll' + (left !== 1 ? 's' : '') + ' until ' + gym.city + ' Gym!';
+    textEl.style.color = '#a0c4ff';
   } else {
     var gym = GYMS[game.currentGym];
-    el.textContent = gym.leader + ' challenge incoming...';
-    el.style.color = '#4CAF50';
+    textEl.textContent = gym.leader + ' challenge incoming...';
+    textEl.style.color = '#4CAF50';
   }
+
+  fillEl.style.width = pct + '%';
+  fillEl.classList.toggle('full', pct >= 100);
 }
 
 function updateButtons() {
@@ -92,20 +101,28 @@ function updateTeamStrip() {
 
   // Diff and animate
   var members = strip.querySelectorAll('.team-member');
+  var hasNewSlot = game.party.length > oldState.length;
+
   game.party.forEach(function(p, i) {
     var el = members[i];
     if (!el) return;
     var old = oldState[i];
     if (!old) {
-      // New slot — bounce in
+      // New slot — bounce in, shift existing members
       el.classList.add('bounce-in');
+      if (hasNewSlot) {
+        for (var j = 0; j < i; j++) {
+          if (members[j]) members[j].classList.add('shifting');
+        }
+      }
     } else if (old.id !== p.id) {
-      // Different pokemon (caught new or evolved) — bounce in
+      // Different pokemon (evolved) — bounce in
       el.classList.add('bounce-in');
     } else if (old.level < p.level) {
-      // Level up — pulse
+      // Level up — pulse + floating text
       el.classList.add('level-pulse');
       SFX.levelUp();
+      spawnFloatLevel(el, p.level);
     }
   });
 
@@ -157,4 +174,35 @@ function launchConfetti() {
   setTimeout(function() {
     document.querySelectorAll('.confetti').forEach(function(el) { el.remove(); });
   }, 6000);
+}
+
+// ===== FLOATING LEVEL TEXT =====
+
+function spawnFloatLevel(el, level) {
+  var rect = el.getBoundingClientRect();
+  var f = document.createElement('div');
+  f.className = 'float-level';
+  f.textContent = 'Lv.' + level;
+  f.style.left = (rect.left + rect.width / 2 - 20) + 'px';
+  f.style.top = (rect.top - 4) + 'px';
+  document.body.appendChild(f);
+  setTimeout(function() { f.remove(); }, 900);
+}
+
+// ===== SCREEN SHAKE =====
+
+function screenShake() {
+  var col = document.querySelector('.game-column');
+  if (!col) return;
+  col.classList.remove('shaking');
+  void col.offsetWidth;
+  col.classList.add('shaking');
+  setTimeout(function() { col.classList.remove('shaking'); }, 250);
+}
+
+// ===== HAPTIC FEEDBACK =====
+
+function haptic(pattern) {
+  if (typeof SFX !== 'undefined' && SFX.isMuted()) return;
+  try { if (navigator.vibrate) navigator.vibrate(pattern); } catch(e) {}
 }

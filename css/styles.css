@@ -314,10 +314,10 @@ body {
   align-items: center; justify-content: center;
   gap: 4px;
 }
-.result-box.visible { opacity: 1; transform: translateY(0); }
+.result-box.visible { opacity: 1; transform: translateY(0); transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1); }
 .result-sprite { width: 64px; height: 64px; object-fit: contain; image-rendering: pixelated; display: none; }
 .result-sprite.visible { display: block; animation: pop-in 0.3s ease; }
-@keyframes pop-in { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes pop-in { 0% { transform: scale(0); } 70% { transform: scale(1.1); } 100% { transform: scale(1); } }
 .result-box .event-name { color: #ffcb05; font-size: 10px; line-height: 1.6; }
 .result-box .event-desc { color: #a0c4ff; font-size: 8px; line-height: 1.8; }
 
@@ -383,11 +383,19 @@ body {
   text-transform: uppercase;
   letter-spacing: 2px;
   box-shadow: 0 4px 15px rgba(255,26,26,0.4);
-  transition: all 0.2s;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.18s ease;
   touch-action: manipulation;
   -webkit-tap-highlight-color: transparent;
 }
-.roll-btn:active:not(:disabled) { transform: scale(0.97); }
+.roll-btn:hover:not(:disabled) {
+  transform: scale(1.03);
+  box-shadow: 0 4px 20px rgba(255,26,26,0.6), 0 0 12px rgba(255,203,5,0.3);
+}
+.roll-btn:active:not(:disabled) {
+  transform: scale(0.95);
+  transition-duration: 0.06s;
+  transition-timing-function: ease-in;
+}
 .roll-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Desktop sidebar — hidden on mobile */
@@ -712,8 +720,11 @@ body {
 }
 
 /* ===== TEAM STRIP ANIMATIONS ===== */
+.team-member {
+  transition: transform 0.2s ease, margin 0.2s ease;
+}
 .team-member.bounce-in {
-  animation: team-bounce 0.5s ease;
+  animation: team-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 @keyframes team-bounce {
   0% { transform: scale(0.3) translateY(20px); opacity: 0; }
@@ -726,6 +737,87 @@ body {
 @keyframes team-pulse {
   0%, 100% { box-shadow: 0 0 0 rgba(255,203,5,0); }
   50% { box-shadow: 0 0 16px rgba(255,203,5,0.8), 0 0 30px rgba(255,203,5,0.4); }
+}
+.team-member.shifting {
+  animation: team-shift 0.25s ease-out;
+}
+@keyframes team-shift {
+  0% { transform: translateX(-8px); }
+  100% { transform: translateX(0); }
+}
+
+/* ===== SCREEN SHAKE ===== */
+@keyframes screen-shake {
+  0% { transform: translate(0, 0); }
+  15% { transform: translate(-4px, 2px); }
+  30% { transform: translate(3px, -3px); }
+  45% { transform: translate(-2px, 3px); }
+  60% { transform: translate(3px, -1px); }
+  75% { transform: translate(-1px, 2px); }
+  100% { transform: translate(0, 0); }
+}
+.game-column.shaking {
+  animation: screen-shake 0.25s linear;
+}
+
+/* ===== FLOATING LEVEL TEXT ===== */
+.float-level {
+  position: absolute;
+  color: #ffcb05;
+  font-family: 'Press Start 2P', monospace;
+  font-size: 8px;
+  pointer-events: none;
+  z-index: 30;
+  text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+  animation: float-level-up 0.9s ease-out forwards;
+}
+@keyframes float-level-up {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  50% { opacity: 1; transform: translateY(-25px) scale(1.2); }
+  100% { opacity: 0; transform: translateY(-45px) scale(0.8); }
+}
+
+/* ===== GYM PROGRESS BAR ===== */
+.gym-progress-wrap {
+  width: 100%;
+  max-width: 200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.gym-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.gym-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3466af, #ffcb05);
+  border-radius: 3px;
+  transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.gym-progress-fill.full {
+  background: linear-gradient(90deg, #4CAF50, #ffcb05);
+}
+.gym-countdown-text {
+  color: #a0c4ff;
+  font-size: 9px;
+  text-align: center;
+}
+
+/* ===== REDUCED MOTION ===== */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .evo-flash.active { animation: none; opacity: 0; }
+  .game-column.shaking { animation: none; }
 }
 
 /* ===== RESPONSIVE — DESKTOP (768px+) ===== */
