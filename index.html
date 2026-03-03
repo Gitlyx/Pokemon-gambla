@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pokemon Adventure Wheel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Pokemon Roll</title>
 <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
 
 <div id="screen-intro" class="screen active">
   <div class="intro-content">
-    <h1>Pokemon<br>Adventure Wheel</h1>
+    <h1>Pokemon<br>Roll</h1>
     <div class="oak-dialogue">
       <div class="oak-avatar">&#x1F468;&#x200D;&#x1F52C;</div>
       <p>Hello there! Welcome to the world of Pokemon!</p>
@@ -39,38 +39,83 @@
 </div>
 
 <div id="screen-game" class="screen">
-  <div class="game-layout">
-    <div class="sidebar-left" id="sidebarLeft"></div>
-    <div class="center-area">
-      <div class="location-banner" id="location"></div>
-      <div class="gym-progress" id="gymProgress"></div>
-      <div class="wheel-wrapper">
-        <div class="pointer"></div>
-        <canvas id="wheel" width="380" height="380"></canvas>
-      </div>
-      <div class="button-row" id="buttonRow"></div>
-      <div class="result-box" id="result">
-        <img class="result-sprite" id="resultSprite">
-        <div class="event-name" id="eventName">Spin the wheel to explore!</div>
-        <div class="event-desc" id="eventDesc"></div>
+  <div class="game-column">
+    <!-- Header bar -->
+    <div class="header-bar">
+      <div class="header-route" id="headerRoute">Route 1</div>
+      <div class="header-badge-count" id="headerBadges">0/8</div>
+      <button class="mute-btn" id="muteBtn" onclick="toggleMute()">&#x1F50A;</button>
+    </div>
+
+    <!-- Gym countdown -->
+    <div class="gym-countdown" id="gymCountdown">3 rolls until Pewter City Gym!</div>
+
+    <!-- Roll card -->
+    <div class="roll-card" id="rollCard" onclick="roll()">
+      <div class="card-inner">
+        <div class="card-front">
+          <div class="pokeball-front">
+            <div class="pokeball-top"></div>
+            <div class="pokeball-line"></div>
+            <div class="pokeball-center"><div class="pokeball-btn"></div></div>
+            <div class="pokeball-bottom"></div>
+          </div>
+          <div class="card-front-label">Tap to Roll!</div>
+        </div>
+        <div class="card-back" id="cardBack">
+          <div class="card-back-label"></div>
+        </div>
       </div>
     </div>
-    <div class="sidebar-right">
-      <h3>Adventure Log</h3>
-      <div id="log"></div>
+
+    <!-- Choice cards -->
+    <div class="choice-container" id="choiceContainer">
+      <div class="choice-card" id="choice0" onclick="pickChoice(0)">
+        <div class="choice-label" id="choiceLabel0"></div>
+      </div>
+      <div class="choice-or">or</div>
+      <div class="choice-card" id="choice1" onclick="pickChoice(1)">
+        <div class="choice-label" id="choiceLabel1"></div>
+      </div>
     </div>
+
+    <!-- Result area -->
+    <div class="result-box" id="result">
+      <img class="result-sprite" id="resultSprite">
+      <div class="event-name" id="eventName">Tap the card or Roll button!</div>
+      <div class="event-desc" id="eventDesc"></div>
+    </div>
+
+    <!-- Team strip -->
+    <div class="team-strip" id="teamStrip"></div>
+
+    <!-- Spacer for bottom bar -->
+    <div class="bottom-spacer"></div>
+  </div>
+
+  <!-- Desktop sidebar -->
+  <div class="sidebar-right">
+    <h3>Adventure Log</h3>
+    <div id="log"></div>
+  </div>
+
+  <!-- Fixed bottom bar -->
+  <div class="bottom-bar">
+    <button class="roll-btn" id="rollBtn" onclick="roll()">Roll!</button>
   </div>
 </div>
 
+<div id="catchOverlay" class="catch-overlay"></div>
+<div id="evoFlash" class="evo-flash"></div>
 <div id="gymOverlay" class="overlay"></div>
 <div id="screen-victory" class="screen"></div>
 
 <script src="js/data.js"></script>
-<script src="js/wheel.js"></script>
+<script src="js/sfx.js"></script>
+<script src="js/roll.js"></script>
 <script src="js/ui.js"></script>
 <script src="js/game.js"></script>
 <script src="js/battle.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
-

@@ -24,87 +24,100 @@ function showResult(t, d, sid) {
 // ===== UI UPDATE =====
 
 function updateUI() {
-  updateLocation();
-  updateProgress();
+  updateHeader();
+  updateGymCountdown();
+  updateTeamStrip();
   updateButtons();
-  updateSidebar();
   updateLog();
 }
 
-function updateLocation() {
+function updateHeader() {
   var loc = game.currentGym < ROUTES.length ? ROUTES[game.currentGym] : ROUTES[ROUTES.length - 1];
-  document.getElementById('location').textContent = loc;
+  document.getElementById('headerRoute').textContent = loc;
+  document.getElementById('headerBadges').textContent = game.badges.length + '/8';
 }
 
-function updateProgress() {
-  var gp = document.getElementById('gymProgress');
+function updateGymCountdown() {
+  var el = document.getElementById('gymCountdown');
   if (game.phase === 'elite4') {
-    gp.textContent = 'All 8 badges earned! Challenge the Elite Four!';
-    gp.style.color = '#FFD700';
-  } else if (game.spinsOnRoute < 3) {
-    var left = 3 - game.spinsOnRoute;
-    gp.textContent = 'Spin ' + left + ' more time' + (left !== 1 ? 's' : '') + ' before the Gym!';
-    gp.style.color = '#a0c4ff';
+    if (game.rollsOnRoute >= 3) {
+      el.textContent = 'Elite Four challenge incoming...';
+      el.style.color = '#FFD700';
+    } else {
+      var left = 3 - game.rollsOnRoute;
+      el.textContent = left + ' roll' + (left !== 1 ? 's' : '') + ' until Elite Four!';
+      el.style.color = '#FFD700';
+    }
+  } else if (game.rollsOnRoute < 3) {
+    var left = 3 - game.rollsOnRoute;
+    var gym = GYMS[game.currentGym];
+    el.textContent = left + ' roll' + (left !== 1 ? 's' : '') + ' until ' + gym.city + ' Gym!';
+    el.style.color = '#a0c4ff';
   } else {
     var gym = GYMS[game.currentGym];
-    gp.textContent = gym.leader + ' is waiting at ' + gym.city + ' Gym!';
-    gp.style.color = '#4CAF50';
+    el.textContent = gym.leader + ' challenge incoming...';
+    el.style.color = '#4CAF50';
   }
 }
 
 function updateButtons() {
-  var br = document.getElementById('buttonRow');
-  var bh = '<button class="spin-btn" onclick="spin()">Spin!</button>';
-  if (game.phase === 'elite4') {
-    bh += ' <button class="e4-btn" onclick="challengeE4()">Elite Four!</button>';
-  } else if (game.spinsOnRoute >= 3 && game.currentGym < GYMS.length) {
-    bh += ' <button class="gym-btn" onclick="challengeGym()">Challenge ' + GYMS[game.currentGym].leader + '!</button>';
+  var btn = document.getElementById('rollBtn');
+  if (!btn) return;
+  if (game.phase === 'victory') {
+    btn.disabled = true;
+    btn.textContent = 'Champion!';
+  } else {
+    btn.textContent = 'Roll!';
   }
-  br.innerHTML = bh;
 }
 
-function updateSidebar() {
-  var sb = document.getElementById('sidebarLeft');
+var prevTeamState = [];
 
-  // Badges
-  var badgeH = '';
-  for (var i = 0; i < 8; i++) {
-    if (i < game.badges.length) {
-      badgeH += '<div class="badge-slot earned"><img src="' + spriteUrl(game.badges[i].pokemonId) +
-        '" style="width:32px;height:32px;image-rendering:pixelated" onerror="this.outerHTML=\'&#x2B50;\'"></div>';
-    } else {
-      badgeH += '<div class="badge-slot" style="color:#444">?</div>';
-    }
-  }
+function updateTeamStrip() {
+  var strip = document.getElementById('teamStrip');
+  if (!strip) return;
 
-  // Party
-  var partyH = '';
-  game.party.forEach(function(p) {
+  // Snapshot previous state for diff
+  var oldState = prevTeamState.slice();
+
+  // Build new HTML
+  strip.innerHTML = game.party.map(function(p) {
     var tc = TYPE_COLORS[p.type] || '#888';
-    partyH +=
-      '<div class="party-member">' +
-        '<img class="pm-sprite" src="' + spriteUrl(p.id) + '" alt="' + p.name + '" onerror="this.style.display=\'none\'">' +
-        '<div class="pm-info">' +
-          '<div class="pm-name">' + p.name + '</div>' +
-          '<div class="pm-level">Lv.' + p.level + ' <span class="pm-type" style="background:' + tc + '">' + p.type + '</span></div>' +
-        '</div>' +
-      '</div>';
+    return '<div class="team-member" data-id="' + p.id + '" data-level="' + p.level + '" style="border:2px solid ' + tc + '">' +
+      '<img class="team-sprite" src="' + spriteUrl(p.id) + '" alt="' + p.name + '" onerror="this.style.display=\'none\'">' +
+      '<div class="team-name">' + p.name + '</div>' +
+      '<div class="team-level" style="color:' + tc + '">Lv.' + p.level + '</div>' +
+    '</div>';
+  }).join('');
+
+  // Diff and animate
+  var members = strip.querySelectorAll('.team-member');
+  game.party.forEach(function(p, i) {
+    var el = members[i];
+    if (!el) return;
+    var old = oldState[i];
+    if (!old) {
+      // New slot — bounce in
+      el.classList.add('bounce-in');
+    } else if (old.id !== p.id) {
+      // Different pokemon (caught new or evolved) — bounce in
+      el.classList.add('bounce-in');
+    } else if (old.level < p.level) {
+      // Level up — pulse
+      el.classList.add('level-pulse');
+      SFX.levelUp();
+    }
   });
 
-  sb.innerHTML =
-    '<h3>Trainer Red</h3>' +
-    '<h4>Badges (' + game.badges.length + '/8)</h4>' +
-    '<div class="badge-grid">' + badgeH + '</div>' +
-    '<h4>Party (' + game.party.length + '/6)</h4>' +
-    (partyH || '<div style="color:#666;font-size:8px">No Pokemon yet</div>') +
-    '<h4>Bag</h4>' +
-    '<div class="bag-item"><img class="bag-icon" src="' + ITEM_BASE + 'potion.png" onerror="this.outerHTML=\'&#x1F48A;\'"> Potions <span class="count">x' + game.bag.potions + '</span></div>' +
-    '<div class="bag-item"><img class="bag-icon" src="' + ITEM_BASE + 'oran-berry.png" onerror="this.outerHTML=\'&#x1F347;\'"> Berries <span class="count">x' + game.bag.berries + '</span></div>' +
-    '<div class="stat-line">Total level: ' + getTotalLevel() + '<br>Total spins: ' + game.totalSpins + '</div>';
+  // Save current state for next diff
+  prevTeamState = game.party.map(function(p) {
+    return { id: p.id, level: p.level };
+  });
 }
 
 function updateLog() {
   var logEl = document.getElementById('log');
+  if (!logEl) return;
   logEl.innerHTML = game.log.slice(0, 50).map(function(e) {
     return '<div class="log-entry"><span class="log-num">#' + e.num + '</span> ' + e.text + '</div>';
   }).join('');

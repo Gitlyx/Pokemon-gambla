@@ -6,6 +6,7 @@ function spriteUrl(id) { return SPRITE_BASE + id + '.png'; }
 function artworkUrl(id) { return SPRITE_BASE + 'other/official-artwork/' + id + '.png'; }
 function cryUrl(id) { return 'https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/latest/' + id + '.ogg'; }
 function playCry(id) {
+  if (typeof SFX !== 'undefined' && SFX.isMuted()) return;
   try { var a = new Audio(cryUrl(id)); a.volume = 0.3; a.play().catch(function(){}); } catch(e) {}
 }
 
@@ -54,28 +55,28 @@ var WILD_POKEMON = [
 
 // ===== GYM LEADERS =====
 var GYMS = [
-  {leader:'Brock',city:'Pewter City',type:'Rock',badge:'Boulder',pokemonId:95,threshold:12,
+  {leader:'Brock',city:'Pewter City',type:'Rock',badge:'Boulder',pokemonId:95,threshold:10,
    intro:"I'm Brock! My rock-hard determination is evident in my Pokemon!",
    win:"Your Pokemon's prowess is remarkable! Take this Boulder Badge!"},
-  {leader:'Misty',city:'Cerulean City',type:'Water',badge:'Cascade',pokemonId:121,threshold:25,
+  {leader:'Misty',city:'Cerulean City',type:'Water',badge:'Cascade',pokemonId:121,threshold:20,
    intro:"My policy is an all-out offensive with water-type Pokemon!",
    win:"Wow! You're too much! Fine, take the Cascade Badge!"},
-  {leader:'Lt. Surge',city:'Vermilion City',type:'Electric',badge:'Thunder',pokemonId:26,threshold:40,
+  {leader:'Lt. Surge',city:'Vermilion City',type:'Electric',badge:'Thunder',pokemonId:26,threshold:35,
    intro:"Hey kid! What do you think you're doing here?",
    win:"Now that's a Pokemon trainer! Take the Thunder Badge, baby!"},
-  {leader:'Erika',city:'Celadon City',type:'Grass',badge:'Rainbow',pokemonId:45,threshold:55,
+  {leader:'Erika',city:'Celadon City',type:'Grass',badge:'Rainbow',pokemonId:45,threshold:48,
    intro:"I'm Erika, the nature-loving princess!",
    win:"Oh! You're remarkable! Take the Rainbow Badge."},
-  {leader:'Koga',city:'Fuchsia City',type:'Poison',badge:'Soul',pokemonId:110,threshold:75,
+  {leader:'Koga',city:'Fuchsia City',type:'Poison',badge:'Soul',pokemonId:110,threshold:65,
    intro:"A ninja must see through deception. Can you?",
    win:"You have proven your worth. Take the Soul Badge."},
-  {leader:'Sabrina',city:'Saffron City',type:'Psychic',badge:'Marsh',pokemonId:65,threshold:95,
+  {leader:'Sabrina',city:'Saffron City',type:'Psychic',badge:'Marsh',pokemonId:65,threshold:82,
    intro:"I had a vision of your arrival. I foresaw your defeat!",
    win:"Your power reminds me of when I was young. Take the Marsh Badge."},
-  {leader:'Blaine',city:'Cinnabar Island',type:'Fire',badge:'Volcano',pokemonId:59,threshold:115,
+  {leader:'Blaine',city:'Cinnabar Island',type:'Fire',badge:'Volcano',pokemonId:59,threshold:100,
    intro:"Hah! I'm Blaine, the hotheaded quiz master!",
    win:"You've earned the Volcano Badge! Your passion burns bright!"},
-  {leader:'Giovanni',city:'Viridian City',type:'Ground',badge:'Earth',pokemonId:112,threshold:140,
+  {leader:'Giovanni',city:'Viridian City',type:'Ground',badge:'Earth',pokemonId:112,threshold:120,
    intro:"So! You've finally arrived! I am the boss of Team Rocket!",
    win:"Ha! That was a truly intense battle! Take this Earth Badge."},
 ];
@@ -88,7 +89,7 @@ var ELITE_FOUR = [
   {name:'Lance',type:'Dragon',pokemonId:149},
   {name:'Champion Blue',type:'Various',pokemonId:18},
 ];
-var E4_THRESHOLD = 180;
+var E4_THRESHOLD = 155;
 
 // ===== ROUTES =====
 var ROUTES = [
@@ -117,30 +118,26 @@ var TYPE_COLORS = {
   Ice:'#98D8D8', Ground:'#E0C068',
 };
 
-// ===== WHEEL EVENTS =====
-var WHEEL_EVENTS = [
-  {name:'Wild Pokemon',color:'#4CAF50'},
-  {name:'Trainer Battle',color:'#f44336'},
-  {name:'Team Rocket',color:'#9C27B0'},
-  {name:'Rival Battle',color:'#FF5722'},
-  {name:'Potion',color:'#E91E63'},
-  {name:'Rare Candy',color:'#FF9800'},
-  {name:'Poke Center',color:'#2196F3'},
-  {name:'Found TM',color:'#795548'},
-  {name:'Berry Harvest',color:'#8BC34A'},
-  {name:'Evolution',color:'#00BCD4'},
+// ===== ROLL EVENTS =====
+var ROLL_EVENTS = [
+  {name:'Wild Pokemon', color:'#4CAF50'},
+  {name:'Trainer Battle', color:'#f44336'},
+  {name:'Rival Battle', color:'#FF5722'},
+  {name:'Power Up', color:'#2196F3'},
+  {name:'Special Training', color:'#795548'},
+  {name:'Evolution', color:'#00BCD4'},
 ];
-var NUM_SLICES = WHEEL_EVENTS.length;
-var ARC = (2 * Math.PI) / NUM_SLICES;
+
+// Weighted array: 25% wild, 25% trainer, 10% rival, 20% power up, 10% special training, 10% evolution
+var ROLL_WEIGHTS = [0,0,0,0,0, 1,1,1,1,1, 2,2, 3,3,3,3, 4,4, 5,5];
 
 // ===== GAME STATE =====
 var game = {
   phase: 'intro',
   party: [],
   badges: [],
-  bag: { potions: 0, berries: 0 },
   currentGym: 0,
-  spinsOnRoute: 0,
-  totalSpins: 0,
+  rollsOnRoute: 0,
+  totalRolls: 0,
   log: [],
 };
